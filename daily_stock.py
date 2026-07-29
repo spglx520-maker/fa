@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 # 要记录的标的，可自行添加多个股票代码
-stock_list = ["sh000001","sh600498"]  # 上证指数
+stock_list = ["sh000001"]  # 上证指数
 csv_path = "stock_data.csv"
 
 # 获取今日日期
