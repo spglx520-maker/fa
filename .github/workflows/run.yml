@@ -1,0 +1,44 @@
+# 工作流名称
+name: 每日自动记录股市行情
+
+# 触发规则
+on:
+  # 定时每日运行：UTC 08:30 = 北京时间 16:30（A股收盘后）
+  schedule:
+    - cron: '30 8 * * 1-5'  # 周一至周五执行，周末休市不跑
+  # 手动一键触发（方便测试）
+  workflow_dispatch:
+
+# 运行任务
+jobs:
+  fetch_stock:
+    # 使用Ubuntu云端系统运行
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取你仓库里所有代码文件
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      # 2. 配置Python环境
+      - name: 安装Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. 安装依赖库
+      - name: 安装依赖包
+        run: pip install -r requirements.txt
+
+      # 4. 执行抓取行情脚本
+      - name: 运行行情采集脚本
+        run: python daily_stock.py
+
+      # 5. 配置git账号，提交更新后的CSV文件回仓库
+      - name: 提交数据更新
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add stock_data.csv
+          # 有数据变更才提交
+          git diff --quiet && git diff --staged --quiet || git commit -m "更新${{ github.run_date }}每日行情"
+          git push origin main
